@@ -1,0 +1,9 @@
+Django
+djangorestframework
+django-environ
+django-extensions
+djangorestframework-simplejwt
+django-cors-headers
+requests
+django-debug-toolbar
+mysqlclient
