@@ -1,6 +1,0 @@
--r ./base.txt
-
-gunicorn
-psycopg2
-whitenoise
-sentry-sdk

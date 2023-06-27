@@ -1,5 +1,8 @@
-// import "./globals.css";
+import "./globals.css";
+import "@/styles/fonts/style.css";
+
 import { Providers } from "@/redux/provider";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 export const metadata = {
   title: "Create Next App",
@@ -14,7 +17,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <AuthProvider> 
+              {children}
+          </AuthProvider>
+        </Providers>
       </body>
     </html>
   );

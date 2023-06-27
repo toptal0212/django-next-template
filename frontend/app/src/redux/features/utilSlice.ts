@@ -1,10 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-export type RequestState = {
-  action: string|null
-  pending: "COMPLETED" | "PENDING" | "NONE"
-};
-
 export type Message = {
   message: string
   type: "success"|"warning"|"error"
@@ -12,15 +7,12 @@ export type Message = {
 };
 
 type utilState = {
-  requestState : RequestState
+  loading : boolean
   message: Message
 }
 
 const initialState:utilState = {
-  requestState:{
-    action: null,
-    pending: "NONE"
-  },
+  loading: false,
   message:{
     type: "success",
     message: "" ,
@@ -33,9 +25,9 @@ export const util = createSlice({
   initialState,
   reducers: {
     reset: () => initialState,
-    requestStatus: (state: utilState, action)=>{
-      const payload = action.payload as RequestState
-      state.requestState = payload
+    loading: (state: utilState, action)=>{
+      const payload = action.payload
+      state.loading = payload
     },
     message: (state: utilState, action)=>{
       const payload = action.payload as Message
@@ -44,6 +36,6 @@ export const util = createSlice({
   },
 });
 
-export const {requestStatus, message} = util.actions
+export const {loading, message} = util.actions
 
 export default util.reducer;

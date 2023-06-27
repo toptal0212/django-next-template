@@ -1,5 +1,4 @@
 import { configureStore } from "@reduxjs/toolkit";
-import authReducer from "./features/authSlice";
 import utilReducer from "./features/utilSlice";
 // import { userApi } from "./services/userApi";
 import { setupListeners } from "@reduxjs/toolkit/dist/query";
@@ -7,7 +6,6 @@ import logger from 'redux-logger'
 
 export const store = configureStore({
   reducer: {
-    authReducer,
     utilReducer,
     // [userApi.reducerPath]: userApi.reducer,
   },

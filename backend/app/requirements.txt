@@ -1,1 +1,14 @@
--r requirements/server.txt
+Django
+djangorestframework
+django-environ
+django-extensions
+djangorestframework-simplejwt
+django-cors-headers
+requests
+django-debug-toolbar
+django-rest-swagger
+mysqlclient
+gunicorn
+psycopg2
+whitenoise
+sentry-sdk

@@ -1,13 +1,14 @@
 import axios, { AxiosResponse } from 'axios'
+import { getCookie, hasCookie, deleteCookie } from 'cookies-next';
 
-export interface IResponse {
-    data: any
-    status: number
-  }
+import {IResponse} from '@/interfaces/index'
+const COOKIE_NAME = process.env.COOKIE_NAME || ""
+
   
-export const baseURL = "http://localhost:4001"
-export const baseAuthURL = `${baseURL}/auth`
-export const baseAdminURL = `${baseURL}/admin`
+export const baseURL = "http://localhost:4001/api"
+export const baseOwnerURL = `${baseURL}/owner`
+export const baseAdminURL = `${baseURL}/company`
+export const baseSchoolURL = `${baseURL}/school`
 
 export const apiInstance = axios.create({
   headers: { 'Content-Type': 'application/json' },
@@ -16,30 +17,44 @@ export const apiInstance = axios.create({
   validateStatus: (status:number) => status < 500,
 })
 
-const token = () => apiInstance.post<AxiosResponse, IResponse>('/token/refresh')
+const token_refresh = async () => {
+  const token:any = getCookie(COOKIE_NAME)
+
+  const response  = await apiInstance.post<AxiosResponse, IResponse>('/auth/refresh', {refresh: token.refresh})
+  if(response.status === 401){
+    deleteCookie(COOKIE_NAME)
+    delete apiInstance.defaults.headers["Authorization"]
+  }
+
+  if(response.status === 200){    
+    apiInstance.defaults.headers["Authorization"] = `Bearer ${response.data.access}`
+  }
+
+  return response
+}
 
 export const getRequest = async (path: string): Promise<IResponse> => {
-  const response = await apiInstance.get<AxiosResponse, IResponse>(path)
-  if (response.status === 401) {
-    const tokenResponse = await token()
-    if (tokenResponse.status !== 200) {
-      return tokenResponse
-    }
-    apiInstance.defaults.headers["Authorization"] = `Bearer ${tokenResponse.data.access}`
-    return apiInstance.get<AxiosResponse, IResponse>(path)
+  let response = await apiInstance.get<AxiosResponse, IResponse>(path)
+  if (response.status === 401 && hasCookie(COOKIE_NAME)) {
+    let response = await token_refresh()
+    if(response.status !== 200)
+      return response
+      
+    response =  await apiInstance.get<AxiosResponse, IResponse>(path)
+    return response
   }
   return response
 }
 
 export const postRequest = async (path: string, payload: any): Promise<IResponse> => {
   const response = await apiInstance.post<AxiosResponse, IResponse>(path, payload)
-  if (response.status === 401) {
-    const tokenResponse = await token()
-    if (tokenResponse.status !== 200) {
-      return tokenResponse
-    }
-    apiInstance.defaults.headers["Authorization"] = `Bearer ${tokenResponse.data.access}`
-    return apiInstance.post<AxiosResponse, IResponse>(path, payload)
+  if (response.status === 401 && hasCookie(COOKIE_NAME)) {
+    let response = await token_refresh()
+    if(response.status !== 200)
+      return response
+      
+    response = await apiInstance.post<AxiosResponse, IResponse>(path, payload)
+    return response
   }
   return response
 }
@@ -50,43 +65,43 @@ export const postFormdata = async (path: string, formData: FormData): Promise<IR
       'content-type': 'multipart/form-data',
     },
   })
-  if (response.status === 401) {
-    const tokenResponse = await token()
-    if (tokenResponse.status !== 200) {
-      return tokenResponse
-    }
-    apiInstance.defaults.headers["Authorization"] = `Bearer ${tokenResponse.data.access}`
-    return apiInstance.post<AxiosResponse, IResponse>(path, formData, {
+  if (response.status === 401 && hasCookie(COOKIE_NAME)) {
+    let response = await token_refresh()
+    if(response.status !== 200)
+      return response
+      
+    response = await apiInstance.post<AxiosResponse, IResponse>(path, formData, {
       headers: {
         'content-type': 'multipart/form-data',
       },
-    })
+    }) 
+    return response
   }
   return response
 }
 
 export const patchRequest = async (path: string, payload: any): Promise<IResponse> => {
   const response = await apiInstance.patch<AxiosResponse, IResponse>(path, payload)
-  if (response.status === 401) {
-    const tokenResponse = await token()
-    if (tokenResponse.status !== 200) {
-      return tokenResponse
-    }
-    apiInstance.defaults.headers["Authorization"] = `Bearer ${tokenResponse.data.access}`
-    return apiInstance.patch<AxiosResponse, IResponse>(path, payload)
+  if (response.status === 401 && hasCookie(COOKIE_NAME)) {
+    let response = await token_refresh()
+    if(response.status !== 200)
+      return response
+      
+    response = await apiInstance.patch<AxiosResponse, IResponse>(path, payload)
+    return response
   }
   return response
 }
 
 export const deleteRequest = async (path: string): Promise<IResponse> => {
   const response = await apiInstance.delete<AxiosResponse, IResponse>(path)
-  if (response.status === 401) {
-    const tokenResponse = await token()
-    if (tokenResponse.status !== 200) {
-      return tokenResponse
-    }
-    apiInstance.defaults.headers["Authorization"] = `Bearer ${tokenResponse.data.access}`
-    return apiInstance.delete<AxiosResponse, IResponse>(path)
+  if (response.status === 401 && hasCookie(COOKIE_NAME)) {
+    let response = await token_refresh()
+    if(response.status !== 200)
+      return response
+      
+    response = await apiInstance.delete<AxiosResponse, IResponse>(path)
+    return response
   }
   return response
 }
