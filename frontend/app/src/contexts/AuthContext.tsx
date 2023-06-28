@@ -25,6 +25,9 @@ interface AuthProviderProps{
     children: React.ReactNode
 }
 
+const COOKIE_NAME = process.env.COOKIE_NAME as string
+
+
 export const AuthProvider = ({ children } : AuthProviderProps) => {
     const dispatch = useAppDispatch()
     const router = useRouter()
@@ -32,12 +35,12 @@ export const AuthProvider = ({ children } : AuthProviderProps) => {
 
     useEffect(() => {
         async function loadUserFromCookies() {
-            if(hasCookie("complereailegal")){           
-                const token = JSON.parse(getCookie("complereailegal") as string)
+            deleteCookie(COOKIE_NAME)   
+            if(hasCookie(COOKIE_NAME)){           
+                const token = JSON.parse(getCookie(COOKIE_NAME) as string)
                 if (token) {
                     apiInstance.defaults.headers.Authorization = `Bearer ${token.access}`
-                    const token_decoded:any = jwt_decode(token)
-                    const res = await getRequest(`/${token_decoded.permission}/me`)
+                    const res = await getRequest(`/me`)
                     if(res.status === 200){
                         setUser(res.data)
                     }
@@ -49,23 +52,25 @@ export const AuthProvider = ({ children } : AuthProviderProps) => {
             }
         }
         dispatch(loading(true))
+        console.log("asdf",COOKIE_NAME)
         loadUserFromCookies()
         dispatch(loading(false))
     }, [])
 
     const login = async (credientail: LoginPayload, callback: (perm: string) => void) => {
-        dispatch(loading(true))
+        dispatch(loading(true))  
+
+        deleteCookie(COOKIE_NAME)   
 
         const response = await apiInstance.post('/auth/login', credientail)
-        if(response.status === 200){        
-            deleteCookie("complereailegal")    
-            setCookie("complereailegal", JSON.stringify(response.data))
-            const token_decoded:any = jwt_decode(response.data)
+        if(response.status === 200){       
+            setCookie(COOKIE_NAME, JSON.stringify(response.data))
             apiInstance.defaults.headers.Authorization = `Bearer ${response.data.access}`
-            const res = await apiInstance.get(`/${token_decoded.permission}/me`)
+            const res = await apiInstance.get(`/me`)
             if(res.status === 200){
                 setUser(res.data)
-                callback(res.data.permission)
+                callback(res.data.me.permission)
+                
             }else{
                 callback("")
             }
@@ -79,7 +84,7 @@ export const AuthProvider = ({ children } : AuthProviderProps) => {
     const logout = () => {
         dispatch(loading(true))
 
-        deleteCookie("complereailegal")
+        deleteCookie(COOKIE_NAME)
         setUser(null)
         delete apiInstance.defaults.headers.Authorization
         router.push("/login")

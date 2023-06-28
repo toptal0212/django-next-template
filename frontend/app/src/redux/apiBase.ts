@@ -18,7 +18,7 @@ export const apiInstance = axios.create({
 })
 
 const token_refresh = async () => {
-  const token:any = getCookie(COOKIE_NAME)
+  const token = JSON.parse(getCookie(COOKIE_NAME) as string)
 
   const response  = await apiInstance.post<AxiosResponse, IResponse>('/auth/refresh', {refresh: token.refresh})
   if(response.status === 401){
